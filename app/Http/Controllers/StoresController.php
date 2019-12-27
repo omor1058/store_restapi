@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Store;
 use Illuminate\Http\Request;
+use Validator;
+use Carbon\Carbon;
 
 class StoresController extends Controller
 {
@@ -55,7 +57,36 @@ class StoresController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $keys = array_keys($request->all());
+        $test['key'] = $keys;
+
+        $validator = Validator::make($test, [
+            'key.*' => 'unique:stores,key',
+        ] , [
+            'key.*.unique' => 'The :input has already been taken.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], 422);
+        }
+
+        $data = [];
+        $i = 0;
+        foreach ($request->all() as $key => $value) {
+            if (empty($key) || empty($value)) {
+                // set response code - 400 bad request
+                return response()->json(['message' => 'Something wrong with URL or parameters'], 400);
+            }
+            $data[$i] = [
+                'key' => $key,
+                'value' => $value,
+            ];
+
+            $i++;
+        }
+
+        Store::insert($data);
+        return response()->json(['message' => 'Data Insert Successfully'], 200);
     }
 
     /**
