@@ -14,11 +14,13 @@ class StoresController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    
     public function index()
     {
         $params = request()->query->all();
 
-        // Check Get Parameter
+        // Get one or more specific values from the store
         if (count($params)) {
             if (isset($_GET['keys'])) {
                 $keys = explode(",", $params['keys']);
@@ -30,7 +32,7 @@ class StoresController extends Controller
             }
         } else {
 
-            // Fetch All data from database
+            // Get all the values of the store.
             $stores = Store::all();
             // Update TTL
             Store::query()->update(['ttl' => date('Y-m-d H:i:s')]);
@@ -58,9 +60,9 @@ class StoresController extends Controller
     public function store(Request $request)
     {
         $keys = array_keys($request->all());
-        $test['key'] = $keys;
+        $key_data['key'] = $keys;
 
-        $validator = Validator::make($test, [
+        $validator = Validator::make($key_data, [
             'key.*' => 'unique:stores,key',
         ] , [
             'key.*.unique' => 'The :input has already been taken.',
@@ -84,20 +86,9 @@ class StoresController extends Controller
 
             $i++;
         }
-
+        // Save a value in the store.
         Store::insert($data);
         return response()->json(['message' => 'Data Insert Successfully'], 200);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Store  $store
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Store $store)
-    {
-        //
     }
 
     /**
@@ -109,17 +100,15 @@ class StoresController extends Controller
      */
     public function update(Request $request, Store $store)
     {
-        //
-    }
+        // Update value in the store
+        foreach ($request->all() as $key => $value) {
+            $store = Store::where('key', $key)->first();
+            if ($store) {
+                $store->update(['value' => $value]);
+            }
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Store  $store
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Store $store)
-    {
-        //
+        return response()->json(['message' => 'Data Updated Successfully'], 200);
     }
+    
 }

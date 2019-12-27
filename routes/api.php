@@ -13,5 +13,6 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::patch('values', 'StoresController@update');
 Route::apiResource('values', 'StoresController')->only('index','store');
 
