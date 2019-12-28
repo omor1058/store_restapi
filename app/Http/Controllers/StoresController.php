@@ -28,7 +28,7 @@ class StoresController extends Controller
                 Store::whereIn('key', $keys)->update(['ttl' => date('Y-m-d H:i:s')]);
             } else {
                 // set response code - 400 bad request
-                return response()->json(['message' => 'Something wrong with URL or parameters'], 400);
+                return response()->json(['status' => 'error','message' => 'Something wrong with URL or parameters'], 400);
             }
         } else {
 
@@ -43,12 +43,10 @@ class StoresController extends Controller
         foreach ($stores as $key => $value) {
             $data[$value->key] = $value->value;
         }
-        if(empty($data)){
-            $data[] = 'No data found';
-        }
+       
         
         // return result
-        return json_encode($data);
+        return  response()->json(['status' => 'OK', 'results' => $data], 200);
     }
 
     /**
@@ -69,7 +67,7 @@ class StoresController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['message' => $validator->errors()], 422);
+            return response()->json(['status' => 'error','message' => $validator->errors()], 422);
         }
 
         $data = [];
@@ -77,7 +75,7 @@ class StoresController extends Controller
         foreach ($request->all() as $key => $value) {
             if (empty($key) || empty($value)) {
                 // set response code - 400 bad request
-                return response()->json(['message' => 'Something wrong with URL or parameters'], 400);
+                return response()->json(['status' => 'error','message' => 'Something wrong with URL or parameters'], 400);
             }
             $data[$i] = [
                 'key' => $key,
@@ -88,7 +86,7 @@ class StoresController extends Controller
         }
         // Save a value in the store.
         Store::insert($data);
-        return response()->json(['message' => 'Data Insert Successfully'], 200);
+        return response()->json(['status' => 'ok','message' => 'Data Insert Successfully'], 200);
     }
 
     /**
@@ -100,15 +98,22 @@ class StoresController extends Controller
      */
     public function update(Request $request, Store $store)
     {
+        $flag = 1;
         // Update value in the store
         foreach ($request->all() as $key => $value) {
             $store = Store::where('key', $key)->first();
             if ($store) {
                 $store->update(['value' => $value]);
+            }else{
+                $flag = 0;
             }
         }
+        if($flag){
+            return response()->json(['status' => 'ok','message' => 'Data Updated Successfully'], 200);
+        }else{
+            return response()->json(['status' => 'error','message' => 'Something wrong with URL or parameters'], 400);
 
-        return response()->json(['message' => 'Data Updated Successfully'], 200);
+        }
     }
     
 }

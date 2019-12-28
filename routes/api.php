@@ -13,6 +13,10 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('/', function () {
+    return response()->json(['status' => 'error','message' => 'Page not found'], 404);
+});
+
 Route::patch('values', 'StoresController@update');
 Route::apiResource('values', 'StoresController')->only('index','store');
 
